@@ -1,0 +1,42 @@
+🔥 Dragon Panel Installation 🔥
+bash
+Copy
+Edit
+# 1️⃣ Clone the Dragon Panel repository
+git clone https://github.com/samanyu200/Dragon-Panel.git
+
+# 2️⃣ Move into the panel directory
+cd Dragon-Panel
+
+# 3️⃣ Install dependencies
+npm install
+
+# 4️⃣ Seed the database (if needed)
+npm run seed
+
+# 5️⃣ Create an admin user
+npm run createUser
+
+# 6️⃣ Start the panel on port 3000
+node .
+🛠️ Wings Installation (Daemon for Running Servers) 🛠️
+bash
+Copy
+Edit
+# 1️⃣ Clone the Dragon Wings repository
+git clone https://github.com/samanyu200/Dragon-Wings.git
+
+# 2️⃣ Move into the wings directory
+cd Dragon-Wings
+
+# 3️⃣ Install dependencies
+npm install
+
+# 4️⃣ Configure Wings in the Dragon Panel:
+#    - Go to the Dragon Panel
+#    - Create a new node
+#    - Click on the "Configure" button
+#    - Copy the generated configuration script and paste it into the terminal
+
+# 5️⃣ Start Wings
+node .
