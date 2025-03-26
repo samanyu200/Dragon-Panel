@@ -1,33 +1,24 @@
 const express = require('express');
 const path = require('path');
-const { exec } = require('child_process');
-
 const app = express();
-const port = 3000;
 
-// Serve Pterodactyl Panel frontend
+// Automatically detect the PORT (for GitHub Codespaces & CodeSandbox)
+const PORT = process.env.PORT || 3000;
+
+// Serve static files from the "panel" directory
 app.use(express.static(path.join(__dirname, 'panel')));
 
+// Handle root URL (redirects to index.html)
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'panel', 'index.html'));
 });
 
-// API Route to Check Wings Status
-app.get('/api/status', (req, res) => {
-    exec("pgrep wings", (err, stdout) => {
-        res.json({ status: stdout ? "Wings is running!" : "Wings is NOT running!" });
-    });
-});
-
-// Install & Start Wings
-exec("bash install_wings.sh", (err, stdout, stderr) => {
-    if (err) {
-        console.error(`Error installing Wings: ${stderr}`);
-    } else {
-        console.log(`Wings installed: ${stdout}`);
+// Start the server and log the URL (for Codespaces)
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 Dragon Panel is running on:`);
+    console.log(`🌍 Local: http://localhost:${PORT}`);
+    
+    if (process.env.CODESPACES) {
+        console.log(`🔗 GitHub Codespaces: https://${process.env.CODESPACE_NAME}-3000.githubpreview.dev`);
     }
-});
-
-app.listen(port, () => {
-    console.log(`Dragon Panel is running on port ${port}`);
 });
