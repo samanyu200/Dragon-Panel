@@ -1,0 +1,5 @@
+{
+    "node_name": "Dragon Node 1",
+    "daemon_secret": "changeme-secret",
+    "panel_url": "http://localhost:3000"
+}
