@@ -1,40 +1,63 @@
 const express = require('express');
-const bodyParser = require('body-parser');
-const cookieParser = require('cookie-parser');
-const path = require('path');
 const fs = require('fs');
+const bcrypt = require('bcrypt');
+const session = require('express-session');
+const path = require('path');
 
 const app = express();
-const port = 3000;
+const config = require('./config/panel_config.json');
 
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(cookieParser());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(session({ secret: 'dragon-secret', resave: false, saveUninitialized: true }));
+
+// Serve static files
 app.use(express.static('panel'));
 
-// Load panel config
-const panelConfig = JSON.parse(fs.readFileSync('./config/panel_config.json', 'utf8'));
+// Auth middleware
+function auth(req, res, next) {
+    if (req.session.user) return next();
+    res.redirect('/login');
+}
 
-// Home Page (Login)
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'panel', 'index.html'));
+// Login page
+app.get('/login', (req, res) => {
+    res.sendFile(path.join(__dirname, 'panel', 'login.html'));
+});
+
+// Login POST
+app.post('/login', (req, res) => {
+    const users = JSON.parse(fs.readFileSync('./data/users.json'));
+    const user = users.find(u => u.username === req.body.username);
+
+    if (!user) return res.send('User not found');
+
+    if (bcrypt.compareSync(req.body.password, user.password)) {
+        req.session.user = user;
+        return res.redirect('/');
+    } else {
+        return res.send('Invalid password');
+    }
 });
 
 // Dashboard
-app.get('/dashboard', (req, res) => {
+app.get('/', auth, (req, res) => {
     res.sendFile(path.join(__dirname, 'panel', 'dashboard.html'));
 });
 
-// Create Server Page
-app.get('/create', (req, res) => {
-    res.sendFile(path.join(__dirname, 'panel', 'create.html'));
+// Logout
+app.get('/logout', (req, res) => {
+    req.session.destroy();
+    res.redirect('/login');
 });
 
-// API Test
-app.get('/api/ping', (req, res) => {
-    res.json({ status: "Panel Running" });
+// Admin page
+app.get('/admin', auth, (req, res) => {
+    if (req.session.user.role !== 'admin') return res.send('Access Denied');
+    res.sendFile(path.join(__dirname, 'panel', 'admin.html'));
 });
 
-// Start Panel
-app.listen(port, () => {
-    console.log(`Panel is running on http://localhost:${port}`);
+// Start server
+app.listen(config.port, () => {
+    console.log(`${config.panel_name} is running on port ${config.port}`);
 });
