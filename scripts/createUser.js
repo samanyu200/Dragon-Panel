@@ -1,41 +1,41 @@
 const fs = require('fs');
 const readline = require('readline');
+const path = require('path');
+
+const usersFilePath = path.join(__dirname, '..', 'data', 'users.json');
+
+// Auto create 'data' folder if it doesn't exist
+if (!fs.existsSync(path.dirname(usersFilePath))) {
+    fs.mkdirSync(path.dirname(usersFilePath));
+}
 
 const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout
 });
 
-function askQuestion(query) {
-    return new Promise(resolve => rl.question(query, resolve));
+function ask(question) {
+    return new Promise(resolve => rl.question(question, resolve));
 }
 
 async function createUser() {
-    const username = await askQuestion("Enter username: ");
-    const email = await askQuestion("Enter email: ");
-    const password = await askQuestion("Enter password: ");
-    const role = await askQuestion("Enter role (admin/user): ");
+    const username = await ask('Enter username: ');
+    const email = await ask('Enter email: ');
+    const password = await ask('Enter password: ');
+    const role = await ask('Enter role (admin/user): ');
 
-    if (role !== "admin" && role !== "user") {
-        console.log("❌ Invalid role! Use 'admin' or 'user' only.");
-        rl.close();
-        return;
-    }
-
-    const newUser = { username, email, password, role };
+    const user = { username, email, password, role };
 
     let users = [];
-    try {
-        const data = fs.readFileSync("data/users.json", "utf8");
-        users = JSON.parse(data);
-    } catch (err) {
-        console.log("No existing users found. Creating new user database.");
+    if (fs.existsSync(usersFilePath)) {
+        users = JSON.parse(fs.readFileSync(usersFilePath));
     }
 
-    users.push(newUser);
-    fs.writeFileSync("data/users.json", JSON.stringify(users, null, 2));
+    users.push(user);
 
-    console.log(`✅ User "${username}" created successfully with role "${role}"!`);
+    fs.writeFileSync(usersFilePath, JSON.stringify(users, null, 2));
+    console.log('User created successfully.');
+
     rl.close();
 }
 
